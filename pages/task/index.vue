@@ -81,44 +81,120 @@
                 class="trello-board__tasks-list card-list"
                 id="trello-tasks-1"
               >
-                <div v-for="task in cate.tasks" @click="editTask(task)" :key="task.id" class="trello-board__tasks-item mb-3 card shadow-none border">
+                <div
+                  v-for="task in cate.tasks"
+                  @click="editTask(task)"
+                  :key="task.id"
+                  class="trello-board__tasks-item mb-3 card shadow-none border"
+                >
                   <div class="p-3">
                     <p class="m-0 d-flex align-items-center">
                       <strong>{{ task.name }}</strong>
-                      <span class="badge ml-auto" :class="cate.name === 'TODO' ? 'badge-light-blue' : cate.name === 'IN_PROGRESS' ? 'badge-warning' : 'badge-success'">{{ cate.name }}</span>
+                      <span
+                        class="badge ml-auto"
+                        :class="
+                          cate.name === 'TODO'
+                            ? 'badge-light-blue'
+                            : cate.name === 'IN_PROGRESS'
+                            ? 'badge-warning'
+                            : 'badge-success'
+                        "
+                        >{{ cate.name }}</span
+                      >
                     </p>
 
                     <p class="d-flex align-items-center mb-2">
                       {{ task.description }}
                     </p>
-                    
+
                     <div class="media flex-row">
-                      <div v-for="user in task.users" :key="user.id" class="media-left mr-2">
-                        <div class="avatar avatar-xs object-fit rounded-circle" :style="`background-image: url(${user.avatar}); background-size: cover`">
-                        </div>
+                      <div
+                        v-for="user in task.users"
+                        :key="user.id"
+                        class="media-left mr-2"
+                      >
+                        <div
+                          class="avatar avatar-xs object-fit rounded-circle"
+                          :style="`background-image: url(${user.avatar}); background-size: cover`"
+                        ></div>
                       </div>
                       <div class="media-body"></div>
                     </div>
                   </div>
                 </div>
               </div>
-              <a href="#" class="btn btn-light btn-block mt-2">+ Add Card</a>
+              <a
+                @click="openCreateTaskModal(cate)"
+                class="btn btn-light btn-block mt-2"
+                >+ Add Card</a
+              >
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <a-modal v-model="isModalCreateOpen" title="Basic Modal" @cancel="handleCancel">
+    <a-modal v-model="isModalCreateOpen">
       <template slot="title">
-        <span><i class="fas fa-tasks" style="font-size: 20px;"></i> New Task</span>
+        <span
+          ><i class="fas fa-tasks mr-2" style="font-size: 18px"></i> New
+          Task</span
+        >
       </template>
+
       <template slot="footer">
-        <a-button key="submit" type="primary">
-          Primary
+        <a-button key="submit" type="primary" class="px-3 rounded-03rem">
+          Create
         </a-button>
       </template>
-      
+
+      <a-form-model
+        ref="ruleForm"
+        :model="form"
+        :rules="rules"
+        :label-col="labelCol"
+        :wrapper-col="wrapperCol"
+      >
+        <a-form-model-item ref="name" label="Task Name" prop="name">
+          <a-input
+            v-model="form.name"
+          />
+        </a-form-model-item>
+
+        <a-form-model-item label="User" prop="userIds">
+          <a-select
+            mode="multiple"
+            label-in-value
+            v-model="form.userIds"
+            placeholder="Select User"
+            :filter-option="false"
+            :not-found-content="fetching ? undefined : null"
+            @search="searchUser"
+            @change="handleChange"
+            class="mb-3"
+          >
+            <a-spin v-if="fetching" slot="notFoundContent" size="small" />
+            <a-select-option v-for="d in data" :key="d._id">
+              <div class="d-flex align-items-center">
+                <div class="mr-3">
+                  <a-avatar
+                    slot="avatar"
+                    :src="d.avatar"
+                    style="border: 1.5px solid green"
+                  />
+                </div>
+                <div>
+                  {{ d.username }}
+                </div>
+              </div>
+            </a-select-option>
+          </a-select>
+        </a-form-model-item>
+
+        <a-form-model-item label="Description" prop="description">
+          <a-input v-model="form.description" type="textarea" />
+        </a-form-model-item>
+      </a-form-model>
     </a-modal>
   </div>
 </template>

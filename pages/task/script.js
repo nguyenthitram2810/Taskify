@@ -11,6 +11,22 @@ export default {
   data() {
     return {
       isModalCreateOpen: false,
+      labelCol: { span: 7 },
+      wrapperCol: { span: 14 },
+      fetching: false,
+      timeout: null,
+      form: {
+        name: "",
+        userIds: [],
+        description: "",
+        status: "TODO"
+      },
+      rules: {
+        name: [
+          { required: true, message: 'Please input task name', trigger: 'blur' },
+        ],
+        description: [{ required: true, message: 'Please input task description', trigger: 'blur' }],
+      },
       categories: [
         {
           name: "TODO",
@@ -37,7 +53,7 @@ export default {
   },
 
   watch: {
-    tasks: function(newVal, oldVal) {
+    tasks: function() {
       this.categories = this.categories.map((cate) => {
         return {
           ...cate,
@@ -74,12 +90,39 @@ export default {
       }
     },
 
-    async editTask(cate) {
+    async fetchUser(value) {
       try {
-        this.isModalCreateOpen = true
-      } catch (error) {
-        
+        await this.$store.dispatch('user/fetchListData', { value })
       }
+      catch(error) {
+        this.handleError(error)
+      }
+    },
+
+    async editTask(cate) {
+    },
+
+    openCreateTaskModal(cate) {
+      this.form.status = cate.value
+      this.isModalCreateOpen = true
+    },
+
+    searchUser(value) {
+      console.log(value);
+      clearTimeout(this.timeout)
+      this.timeout = setTimeout(async() => {
+        this.fetchUser(value.trim())
+      }, 1000); // 1 sec delay
+    }, 
+
+    handleChange(value) {
+      console.log("value change", value);
+      // Object.assign(this, {
+      //   value,
+      //   data: [],
+      //   fetching: false,
+      // });
+      
     },
 
     logOut() {
@@ -90,7 +133,7 @@ export default {
         this.$notification["error"]({
           message: 'ERROR',
           description:
-            err.message
+          error.message
         });
       }
     }
